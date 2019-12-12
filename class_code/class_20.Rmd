@@ -1,0 +1,851 @@
+---
+title: "Class 20 notes and code"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+
+
+
+$\\$
+
+
+
+
+
+```{r setup, include=FALSE}
+
+# install.packages("latex2exp")
+
+library(latex2exp)
+
+
+#options(scipen=999)
+
+
+knitr::opts_chunk$set(echo = TRUE)
+
+set.seed(123)
+
+```
+
+
+
+$\\$
+
+
+
+
+## Overview: Multiple linear regression continued
+
+
+
+ * Multicolinearity and the variance inflated factor
+ * Polynomial regression
+ * More data wrangling with dplyr
+ * Incorporating categorical variables into linear models
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+## Part 1: Multiple linear regression using baseball data
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 1.1: Creating a few commonly used baseball statistics
+
+
+Let's explore which statistic has the highest correlation with the number of runs a team has scored. 
+
+We can start by creating a few commonly used statistics/metrics for quantifying hitting ability by running the code below. 
+
+
+```{r}
+
+
+# install.packages('Lahman')
+
+library(Lahman)
+library(dplyr)
+
+
+# View(Teams)
+
+
+
+# reduce the data frame to the main batting statistics of interest
+team_batting <- select(Teams, yearID, teamID, G,  W,  L, R,  AB,  H,  X2B, X3B,  HR,  BB,  SO, SB, CS,  HBP, SF)
+
+
+# get commonly used composite statistics 
+team_batting <- mutate(team_batting,
+                       X1B = H - (X2B + X3B + HR), 
+                       BA = H/AB, 
+                       OBP = (H + BB)/(AB + BB),
+                       SlugPct = (X1B + 2 * X2B + 3 * X3B + 4 * HR)/AB,
+                       OPS = OBP + SlugPct)
+
+
+# only use teams that have played the 162 games in a season (the number of games currently in a MLB season)
+team_batting <- filter(team_batting, G == 162)
+
+  
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+#### Part 1.2: Fitting a regression model to come up with a better metric
+
+
+Let's now use the lm() function to fit a linear regression model that can potentially do a better job at predicting runs.
+
+We can also evaluate which variables seem to be useful for predicting runs.
+
+
+
+
+```{r}
+
+
+# fit the multiple regression model
+fit <- lm(R ~ X1B + X2B + X3B + HR + BB + AB, data = team_batting)
+
+
+# examine the coefficients
+(baseball_coefs <- coef(fit))
+
+
+# look at the model fit statistics
+(summary_fit <- summary(fit))
+
+
+```
+
+
+
+$\\$
+
+
+
+
+
+#### Part 1.3a: Examining how variables affect each other
+
+
+In the above problem we notice that the coefficient for at-bats (AB) is negative. This doesn't make too much sense because if a team has more changes to hit the ball (i.e., at-bats) then they should score more runs. 
+
+Let's explore this by fitting a model for predicting runs R using at-bats (AB).
+
+
+
+```{r}
+
+# fit the model using only AB
+
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+#### Part 1.3b: Examining how variables affect each other
+
+
+So why is the coefficient on AB negative when we fit multiple variables? 
+
+The reaons is that we when we fit multiple variables, the coefficient for a variable $x_i$ is given by how much $x_i$ can predict of $y$ out of the values in $x_i$ that **can't be predicted by the other predictors**. 
+
+To assess this we can:
+
+a) predict $x_i$ from the other predictors
+b) use the residuals of this fit to predict $y$
+c) the coefficient of the residuals from part a) is the same as the coefficient for $x_i$ when fitting the full multiple regression model. 
+
+
+
+
+```{r}
+
+# model AB as a linear function of the other variables X1B + X2B + X3B + HR + BB
+
+
+# model Runs from the fit_pred_AB residuals
+
+
+
+
+```
+
+
+To understand this another way, the other variables X1B, X2B, etc. are predicting runs (R) already, so having more at-bats (AB) after already accounting for these other predictors is a bad thing because these at-bats led to the hitter getting out (hence the coefficient on AB is negative in the multiple regression model). 
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+#### Part 1.4: Can you come up with a regression model that has an even higher correlation with runs? 
+
+
+Last class we added more derived variables to our regression model to try to get a better fit. 
+
+We saw that building a regression model with the old and new variables led to most of the variables not being statistically significant. 
+
+
+Let's examine that further...
+
+
+
+
+```{r}
+
+
+team_batting2 <- mutate(team_batting, 
+                        X1Bn = X1B/AB, 
+                        X2Bn = X2B/AB, 
+                        X3Bn = X3B/AB, 
+                        XHRn = HR/AB, 
+                        XBBn = BB/AB)                        
+
+                        
+fit2 <- lm(R ~ (X1B + X2B + X3B + HR + BB + X1Bn + X2Bn + X3Bn + XHRn + XBBn), data = team_batting2)
+
+
+(summary_fit2 <- summary(fit2))
+
+
+summary_fit2$r.squared
+
+
+```
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 1.5: Multicolinearity
+
+
+Multicolinearity occurs when predictor variables are highly correlated with each other. If there is multicolinearity, there are multiple variables that can make equally good predictions for $y$ and this ends up making the coefficients on these variables not statistically significant. 
+
+The variance inflated factor (VIF) is a statistic to assess multicolinearity. A rule of thumb is that $VIF_i$ > 5 indicates significant multicolinearity. 
+
+
+
+```{r}
+
+library(car)
+
+
+# Looking at the original model fit variance inflation factor (VIF)
+
+
+
+
+# view the correlation of all pairs of variables
+
+
+
+
+
+# Looking at the VIF for the model with the additional variables
+
+
+
+
+# are there VIF values greater than 5? 
+
+
+
+
+# can plot all pairs for the more complex model too
+
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 1.5: Comparing nested models
+
+
+We can also see if a particular predictor is important in a model by comparing a model with that predictor to a model that has that predictor removed using a F-test. 
+
+
+Let's see if it is important to have at-bats (AB) in our model at all
+
+
+```{r}
+
+
+# fit the multiple regression model
+
+
+
+# fit the multiple regression model
+
+
+
+# use the anova function to compare the models
+
+
+
+
+```
+
+
+Added at-bats (AB) leads to a model with a better fit so $\beta_{AB} \ne 0$ 
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+## Part 2: Polynomial regression
+
+
+We can potentially increase the ability to fit our data by adding polynomial expanded terms to our regression model.
+
+$\hat{y} = \beta_0 + \beta_1 x_1 + \beta_2 x_1^2 + \beta_3 x_1^3 + ...$ 
+
+
+
+
+$\\$
+
+
+
+
+#### Part 2.1: Looking at used corollas again
+
+
+
+Let's look at our used toyota corolla data again
+
+
+
+```{r}
+
+
+
+#download.file('https://yale.box.com/shared/static/gzu5lhulepp3zsyxptwxoeafpst1ccdv.rda', 'car_transactions.rda')
+
+load('car_transactions.rda')
+
+
+used_corollas <- select(car_transactions, 
+                        price_bought, 
+                        mileage_bought,
+                        model_bought,
+                        make_bought,
+                        new_or_used_bought)
+
+used_corollas <- filter(used_corollas, 
+                        model_bought == "Corolla", 
+                        new_or_used_bought == "U")
+
+
+used_corollas <- na.omit(used_corollas)
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+#### Part 2.2: Polynomial regression on the car data
+
+
+Let's now create polynomial fits predicting the price a car was sold as a function of $mileage$ + $mileage^2$ + $mileage^3$ + ...
+
+Let's do this for polynomials from order 1 up to order 5
+
+
+
+```{r}
+
+
+# create an empty list to store all the models
+
+
+
+
+# use a for loop and the poly() function to fit models up to degree 5
+
+
+
+
+# view statistics on the model of degree 5
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 2.3: Comparing R^2 and adjusted R^2
+
+
+Let's commpare the $R^2$ and $R_{adj}^2$ values
+
+
+```{r}
+
+
+# use a for loop to extract R^2 and adjusted R^2 from these models
+
+
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+#### Part 2.4: Visualizing the model
+
+
+Let's visualize the model of degree 5
+
+
+```{r}
+
+
+# create x values of miles from 0 to 300,000
+
+
+# make predictions for the degree 5 model
+
+
+# plot the original data and the degree 5 model 
+
+
+
+
+
+```
+
+
+
+$\\$
+
+
+
+
+## Part 3: Data summarization with dplyr
+
+
+So far we have used the following dplyr functions
+
+a) filter() to reduce the number of rows
+
+b) select() to get a subset of variables 
+
+c) mutate() to add on new variables to a data frame
+
+d) arrange() to rearrange the order of rows in a data frame
+
+e) sample_n() to randomly sample rows in a data frame
+
+
+
+One of the most powerful features of dplyr is the ability to summarize data in different groups. To do this we use:
+
+a) group_by() which specifies which groups to compute statistics over
+b) summarize() function which creates separate statistics for each group 
+
+
+Let's try this on the Edmunds car data
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 3.1: Summary statistics by group
+
+
+Let's get the mean price for used cars separately for each brand
+
+
+
+
+```{r}
+
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 3.2: Summary statistics using more than one group
+
+
+
+We can also group by more than one variable and get summaries for each brand for both new and used cars. 
+
+
+```{r}
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 3.3: Grouping with the mutate() function
+
+
+We can also use the group_by() function with the mutate() function rather than using it with the summarize() function. This will add the statistics values from each group on as an additional row in the data frame. 
+
+
+```{r}
+
+
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+## Part 4: Fitting linear regression models with categorical predictors
+
+
+When I sold my new car, I was interested in also buying a new car. Toward the end of my search, the car models I was consider were the Mazda 3 and the Subaru Impreza. When buying the new car, I also considered that at some point I was going to have to sell the car, so I was interested in looking at how car prices decline as they are driven more miles. 
+
+
+
+
+#### Part 4.1: Getting the relevant data
+
+
+Let's examine this for the Mazda 3, the Subaru Impreza along with the BMW 5 series (one can dream, right?). Let's start by filtering the data to get only these makes.
+
+
+
+```{r}
+
+
+three_car_data <- car_transactions %>%
+  filter(model_bought %in% c("MAZDA3", "Impreza", "5 Series"),
+         new_or_used_bought == "U") %>%
+  droplevels()   # remove unused factor levels
+
+
+
+# we can visualize the data too...
+plot(price_bought ~ mileage_bought, data = filter(three_car_data, make_bought == "BMW"), ylim = c(0, 65000), 
+     ylab = "Price ($)", xlab = "Miles driven")
+
+points(price_bought ~ mileage_bought, data = filter(three_car_data, make_bought == "Subaru"), col = "blue")
+
+points(price_bought ~ mileage_bought, data = filter(three_car_data, make_bought == "Mazda"), col = "red")
+
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 4.2: Fitting a model with different intercepts for each car type
+
+
+Let's now fit a model for predicting price as a function of miles driven with a separate intercept for each model.
+
+
+```{r}
+
+
+
+# fit a linear model with separate intercepts
+
+
+
+# summarize the model 
+
+
+
+# save the coefficients
+
+
+
+```
+
+
+
+
+
+**Question:** How much less is a Mazda 3 compared to a BMW 5 series?
+
+
+
+
+
+
+$\\$
+
+
+
+#### Part 4.3: Visualizing the fits
+
+
+We can visualize these models too. All three models have the same slope but different y-intercepts. 
+
+
+
+
+```{r}
+
+
+# plot the cars again in the different colors 
+
+
+
+# add the regression lines with the different y-intercepts
+
+
+
+```
+
+
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+#### Part 4.4: Fitting a model with different intercepts and slopes for each car type
+
+
+```{r}
+
+
+# fit a model with different intercepts and slopes
+
+
+
+# get a summary of the model
+
+
+
+
+# get the coefficients
+
+
+
+```
+
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+
+#### Part 4.5: Visualizing the model with different intercepts and slopes 
+
+
+
+```{r}
+
+
+# visualize the data again
+
+
+
+
+# add the regression lines with separate slopes and intercepts
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

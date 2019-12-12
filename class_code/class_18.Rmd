@@ -1,0 +1,445 @@
+---
+title: "Class 18 notes and code"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+
+
+
+$\\$
+
+
+
+
+
+```{r setup, include=FALSE}
+
+# install.packages("latex2exp")
+
+library(latex2exp)
+
+
+#options(scipen=999)
+
+
+knitr::opts_chunk$set(echo = TRUE)
+
+set.seed(123)
+
+```
+
+
+
+$\\$
+
+
+
+
+## Overview
+
+ * Additional topics in simple linear regression: 
+    * Confidence and prediction intervals, leverage, standarized and studentized residuals, Cook's distance
+ 
+ * Multiple linear regression
+ 
+
+
+
+
+$\\$
+
+
+
+
+
+
+## Part 1: Additional statistics for evaluating simple linear regression fits
+
+
+Let us use the data from the 2000 Florida election to look at additional metrics for evaluating simple linear regression fits. 
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+#### Part 1.2: Loading the data and fitting the model
+
+
+Let's start by loading the data and fitting a linear regression model predicting the number of 
+
+
+
+```{r }
+
+
+#download.file('https://raw.githubusercontent.com/emeyers/SDS230_F19/master/class_data/florida_vote_data_2000.Rda', 'florida_vote_data_2000.Rda')
+
+
+load('florida_vote_data_2000.Rda')
+
+
+# arrange the data based on the number of votes Bush received
+
+
+# fit the linear regression model
+
+
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+#### Part 1.2: Confidence intervals and prediction intervals
+
+
+
+
+```{r}
+
+
+# confidence intervals for the betas
+
+
+
+
+# confidence interval for the regression line mu_y
+
+
+
+# prediction interval for the regression line
+
+
+
+# plot both confidence interval and the prediction interval
+
+
+
+
+# plot confidence interval
+
+
+
+
+
+# plot prediction interval
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+#### Part 1.3: Leverage and Cook's distance
+
+
+
+
+```{r}
+
+
+
+# get the h_i "hat values"
+
+
+
+# plot the 20 largest hat values
+
+
+
+# plot Cook's distances and plot them
+
+
+
+# plot residuals as a function of the hat values
+
+
+
+
+# use the base R function to plot the standardized residuals with the hat values 
+#  along with contours that contain constant Cook's distance values
+
+
+
+
+
+
+```
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+
+
+
+
+## Part 2: Multiple linear regression using baseball data
+
+
+$\\$
+
+
+
+
+#### Part 2.1: Creating a few commonly used baseball statistics
+
+
+Let's explore which statistic has the highest correlation with the number of runs a team has scored. 
+
+We can start by creating a few commonly used statistics/metrics for quantifying hitting ability by running the code below. 
+
+
+```{r}
+
+
+# install.packages('Lahman')
+
+library(Lahman)
+library(dplyr)
+
+
+# View(Teams)
+
+
+
+# reduce the data frame to the main batting statistics of interest
+team_batting <- select(Teams, yearID, teamID, G,  W,  L, R,  AB,  H,  X2B, X3B,  HR,  BB,  SO, SB, CS,  HBP, SF)
+
+
+# get commonly used composite statistics 
+team_batting <- mutate(team_batting,
+                       X1B = H - (X2B + X3B + HR), 
+                       BA = H/AB, 
+                       OBP = (H + BB)/(AB + BB),
+                       SlugPct = (X1B + 2 * X2B + 3 * X3B + 4 * HR)/AB,
+                       OPS = OBP + SlugPct)
+
+
+# only use teams that have played the 162 games in a season (the number of games currently in a MLB season)
+team_batting <- filter(team_batting, G == 162)
+
+  
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 2.2: Which statistics are most correlated with runs
+
+
+
+Let's look at the *correlation* between runs a team scores (R) and the following statistics:
+
+ * HR:  home runs
+ * BA:  batting average
+ * SlugPct: slugging percentage
+ * OBP:  on base percentage
+
+
+
+```{r}
+
+
+
+
+# correlate runs with HR
+
+
+
+# correlate runs with BA
+
+
+
+# correlate runs with SlugPct
+
+
+
+# correlate runs with OBP
+
+
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 2.3: Visualizing the relationships
+
+
+
+Let's visualize the correlation between the main variables of interest: R, HR, OBP, and SlugPct.
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+#### Part 2.4: Fitting a regression model to come up with a better metric
+
+
+Let's now use the lm() function to fit a linear regression model that can potentially do a better job at predicting runs.
+
+We can also evaluate which variables seem to be useful for predicting runs.
+
+
+
+
+```{r}
+
+
+# fit the multiple regression model
+
+
+
+# examine the coefficients
+
+
+
+# look at the model fit statistics
+
+
+
+# extract the r^2 value
+
+
+
+```
+
+
+
+**Questions:**  Do the values for the coefficients make sense? 
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+#### Part 2.5: Can you come up with a regression model that has an even higher correlation with runs? 
+
+
+Add new variables to the data frame that contain additional statistics (e.g., HR^2, etc) and see if you can come up with an even higher correlation value with runs. 
+
+
+Do you think your new model will be better at predicting the number of runs a team scores in the upcoming 2020 baseball season? 
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

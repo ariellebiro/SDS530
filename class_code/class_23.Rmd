@@ -1,0 +1,776 @@
+---
+title: "Class 23 notes and code"
+output:
+  pdf_document: 
+   fig_width: 7
+   fig_height: 5
+  html_document: default
+---
+
+
+
+
+
+$\\$
+
+
+
+
+
+```{r setup, include=FALSE}
+
+# install.packages("latex2exp")
+
+library(latex2exp)
+
+library(dplyr)
+
+
+#options(scipen=999)
+
+
+knitr::opts_chunk$set(echo = TRUE)
+
+set.seed(123)
+
+```
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+## Overview: Multiple linear regression continued
+
+
+
+ * Plotting using grammar of graphics with ggplot
+ * Bonus ggplot features
+ * Joining data frames
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+## Part 1: Visualization with ggplot
+
+
+We can use the ggplot2 package which is part of the tidyverse to create much nicer looking graphics than using base R graphics. The ggplot2 library is modeled on Leland Wilkinson's "grammar of graphics" which tries to create graphics as a combination of basic visual elements. 
+
+
+In the exercises below, we will use the motor trends cars data set (mtcars) that comes with base R installation, and also the gapminder data. 
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 1.1: Scatter plots
+
+
+```{r}
+
+
+# install.packages("ggplot2")
+
+
+library(ggplot2)
+
+
+# base R
+
+
+# ggplot - mapping in the geom
+
+
+
+# ggplot - global mapping
+ 
+
+
+# ggplot - shorter global mapping
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 1.2: Adding labels to plots
+
+
+We can add labels to the plots using the xlab("label1") and ylab("label2") functions
+
+
+
+```{r}
+
+
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 1.3: More aesthetic mappings
+
+
+```{r}
+
+
+# add color based on the transmission type (is automatic or not)
+
+
+
+
+# it is better to treat the transmission type as a categorical variable
+
+
+
+
+# can also try mappping transmission type to shape or size 
+
+
+
+
+```
+
+
+
+$\\$
+
+
+
+#### Part 1.4: Attributes vs. Aesthetics
+
+
+Setting an **aesthetic mapping** maps a variable to a **glyph property**
+
+Setting an **attribute** set a glyph property to a **fixed value**
+
+
+
+```{r}
+
+
+# setting a aesthetic
+
+
+
+# setting an attribute
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+#### Part 1.5: Facets
+
+
+Beyond comparing variables based on aesthetics you can compare categorical variables by splitting a plot into subplots (called facets) using facet_wrap()
+
+
+
+
+```{r}
+
+
+# separate subplots for the two transmission types
+
+
+
+
+# One can also do facets in two dimensions
+
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+#### Part 1.6: Overplotting
+
+
+Sometimes points overlap making it hard to estimate the number of points at a particular range of values. 
+
+We can control the transparency of points by changing their alpha values.
+
+
+
+
+```{r}
+
+library(gapminder)
+
+
+# a lot of overplotting
+
+
+
+# changing the transparency levels makes it a bit easir to see how many points are at a given x, y location
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+#### Part 1.7: Changing scales
+
+
+We can transform the scales of continuous data too
+
+
+```{r}
+
+# changing the scale on the x-axis
+
+
+
+```
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 1.8: geoms
+
+
+We can use different geoms to create other types of plots.
+
+
+
+```{r}
+
+# Let's create a plot that shows the GDP in the United States as a function of the year using the geom geom_line()
+
+
+
+
+# Let's plot a histogram of the weights of cars
+
+
+
+# Let's create a boxplot of the weights of cars
+
+
+
+
+# Let's create a side-by-side boxplot of the weights of cars depending on the number of cylinders the engine has
+
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 1.9: geoms continued
+
+Violin and Joy plots are other ways to view distributions of data
+
+
+
+```{r}
+
+# violin plot 
+
+
+
+
+# library("ggridges")
+
+# joy plot
+
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 1.10: geoms continued continued
+
+
+We can also have multiple geom layers on a single graph by using the + symbol
+E.g   ggplot(…) + geom_type1() + geom_type2()
+
+
+
+```{r}
+
+# Create a scatter plot of miles per gallon as a function of weight and then add a smoothed line using geom_smooth()
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 1.10: Themes
+
+
+We can also use different types to change the appearance of our plot
+
+```{r}
+
+
+# Add theme_classic() to our plot
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+#### Part 1.11: Example - plotting the IPED faculty salary data
+
+
+```{r}
+
+
+# source('../../../SDS230_F19/class_functions/class_functions.R')
+# download_class_data("IPED_salaries_2016.rda")
+# load("IPED_salaries_2016.rda")
+
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Part 2: Bonus features of ggplot
+
+
+Below are some extra packages that can extend the functionality of ggplot
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 2.1: Additional geoms
+
+There are additional packages that add more geoms
+
+
+
+
+```{r}
+
+
+# # install.packages("emoGG")
+
+# library(emoGG)
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+#### Part 2.2: Adding animation
+
+
+We can create animated images (gifs) using the gganimate package. To learn how to use this package see the [gganimate github website](https://github.com/thomasp85/gganimate)
+
+
+
+```{r}
+
+# # install.packages("gganimate")
+
+# library(gganimate)
+
+
+# example from:  https://github.com/thomasp85/gganimate
+
+# run this from the console
+
+# ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, colour = country)) +
+#   geom_point(alpha = 0.7, show.legend = FALSE) +
+#   scale_colour_manual(values = country_colors) +
+#   scale_size(range = c(2, 12)) +
+#   scale_x_log10() +
+#   facet_wrap(~continent) +
+#   # Here comes the gganimate specific bits
+#   labs(title = 'Year: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
+#   transition_time(year) +
+#   ease_aes('linear')
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 2.2: Interactivity
+
+
+We can make our plots interactive using the plotly() library. To learn more about plotly [vist their website](https://plot.ly/)
+
+
+
+
+```{r}
+
+
+# # install.packages("plotly")
+
+# library(plotly)
+
+# also better run from the console or need to knit to html
+
+# p <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, 
+# 	size = pop, col = continent, frame = year)) +  
+# 	geom_point() +  
+# 	scale_x_log10()
+# 
+# ggplotly(p)
+
+
+
+```
+
+
+
+$\\$
+
+
+
+
+
+
+## Part 3: Joining data frames
+
+
+Often data of intertest is spread across multiple data frames that need to be joined together into a single data frame for further analyses. We will explore how to do this using dplyr. 
+
+
+Let's look at a very simple data set to explore joining data frames. 
+
+
+```{r}
+
+
+
+#  download_class_data('x_and_y.Rda')
+# load('x_and_y.Rda')
+
+
+
+```
+
+
+$\\$
+
+
+
+#### Part 3.1: Left join
+
+Left joins keep all rows in the left table.  
+
+Data from right table added when there is the key matches, otherwise NA as added. 
+
+
+
+```{r}
+
+
+
+```
+
+
+
+$\\$
+
+
+
+#### Part 3.2: Right join
+
+
+Right joins keep all rows in the right table.  
+
+Data from left table added when there is the key matches, otherwise NA as added. 
+
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+$\\$
+
+
+
+#### Part 3.3: Inner join
+
+
+Inner joins only keep rows in which there are matches between the keys in both tables
+
+
+
+```{r}
+
+
+
+
+
+```
+
+
+
+$\\$
+
+
+
+#### Part 3.4: Full join
+
+Full joins keep all rows in both table.  
+NAs are added where there are no matches
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+$\\$
+
+
+
+
+#### Part 3.5a: Duplicate keys
+
+
+Duplicate keys are useful if there is a one-to-many relationship (duplicates are usually in the left table). 
+
+Let's look at two other tables that have duplicate keys
+
+
+
+```{r}
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 3.5b: Duplicate keys
+
+
+If both tables have duplicate keys you get all possible combinations (Cartesian product). This is almost always an error! Always check the output dimension after you join a table because even if there is not a syntax error you might not get the table you are expecting!
+
+
+
+```{r}
+
+# initial left data frame only has 3 rows
+
+
+
+# left join when both the left and right tables have duplicate keys
+
+
+# output now has more rows than the initial table
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+#### Part 3.5c: Duplicate keys
+
+
+
+To deal with duplicate keys in both tables, we can join the tables **using multiple keys** in order to make sure that each row is uniquely specified
+
+
+```{r}
+
+
+# initial left data frame only has 3 rows
+
+
+
+
+# output now only has 3 rows
+
+
+
+
+```
+
+
+
+
+$\\$ 
+
+
+
+
+

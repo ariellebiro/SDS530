@@ -1,0 +1,673 @@
+---
+title: "Class 10 notes and code"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+
+
+
+$\\$
+
+
+
+
+
+```{r setup, include=FALSE}
+
+# install.packages("latex2exp")
+
+library(latex2exp)
+
+
+options(scipen=999)
+
+
+knitr::opts_chunk$set(echo = TRUE)
+
+set.seed(123)
+
+```
+
+
+
+$\\$
+
+
+
+
+## Overview
+
+ * Review permutation tests for two means in R
+ * Permutation tests for more than 2 means
+ * Permutation tests for more than 2 means in R
+ * Review z-scores and correlation
+ * Permutation tests for correlation
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+
+## Part 1: Permutation tests for comparing two sample means in R
+
+
+**Question:** Does eating late at night make you put on more weight compared to whether you ate the same amount of food during the day? 
+
+
+To test this idea researchers, [Fonken et al, 2010](https://www.ncbi.nlm.nih.gov/pubmed/20937863), examined this question in mice. 
+
+Mice were randomly divided into 2 groups:
+
+ * **Dark condition**:  8 mice were given 8 hours of darkness at night when they couldn’t eat
+ * **Light condition**: 9 were constantly exposed to light for 24 hours so they could always eat
+
+
+The data from the mice is below. Let's use a permutation test to see if there is any difference between the amount of weight the mice gained between these two conditions. 
+
+
+
+
+
+##### Step 0: Plot the data
+
+
+```{r mice_plot}
+
+# run this once
+# get the mice data
+# source('class_functions.R')
+# download_class_data("mice.Rda")
+
+# load the data
+load("mice.Rda")
+
+
+
+# plot the data as a boxplot
+
+
+
+# plot the data as a strip chart by:
+
+
+
+# a) creating a list of the data 
+
+
+# b) creating a stripchart   
+
+
+
+
+
+
+
+
+```
+
+
+
+
+##### Step 1: State the null and alternative hypotheses 
+
+
+$H_0: $
+$H_A: $
+
+
+$\alpha = $
+
+
+
+
+
+$\\$
+
+
+
+
+
+##### Step 2: Calculate the observed statistic
+
+```{r pill_obs_stat}
+
+
+
+
+```
+
+
+
+$\\$
+
+
+
+
+
+##### Step 3: Create the null distribution
+
+
+
+```{r null_dist_mice}
+
+
+# combine the data from the dark and light groups together
+
+
+# use a for loop to create shuffled dark and light groups and shuffled statistics 
+null_distribution <-  NULL
+for (i in 1:10000) {
+
+       # shuffle data
+
+        # create fake dark and light groups
+
+
+        # save the statistic of interest
+
+}
+
+
+
+
+
+
+```
+
+
+
+$\\$
+
+
+
+
+
+##### Step 4: Calculate a p-value
+
+
+```{r p_value_mice}
+
+
+# plot the null distribution again with a red line a the value of the observed statistic
+
+
+
+
+# calculate the p-value
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+
+##### Step 5: Make a decision
+
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+[Give a mouse a cookie](https://hamstersworld.weebly.com/uploads/2/0/6/1/2061190/8024088.jpg)
+
+
+[science has gone too far](https://i.imgflip.com/9vr.jpg)
+
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+## Part 2: Permutation tests for more than two sample means
+
+
+A similar test can be run comparing more than 2 means and for seeing if there is a meaningful correlation in the data...
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+## Part 3: Permutation tests for more than two sample means in R 
+
+
+
+A group of Hope College students wanted to see if there was an association between a student’s major and the time it takes to complete a small Sudoku-like puzzle
+
+They grouped majors into four categories
+ * Applied science (as)
+ * Natural science (ns)
+ * Social science  (ss)
+ * Arts/humanities (ah)
+
+
+
+
+
+$\\$
+
+
+
+
+
+##### Step 0: Plot the data
+
+
+```{r sudoku_plot}
+
+
+# get the data
+sudoku_data <- read.table('http://www.math.hope.edu/isi/data/chap9/MajorPuzzle.txt', header = TRUE)
+
+
+
+# create a boxplot of the data
+
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+##### Step 1: State the null and alternative hypotheses 
+
+
+$H_0: $
+$H_A: $ 
+
+
+$\alpha = $
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+##### Step 2: Calculate the observed statistic
+
+
+
+
+```{r sudoku_obs_stat}
+
+
+# we can use the by() function to get the means separately for each group
+# (we will learn of a better way to do this later in the semester)
+group_means <- as.vector(by(sudoku_data$time, sudoku_data$major, mean))
+
+
+# a function to get the MAD statistic
+get_MAD_stat <- function(group_means) {
+  
+  total <- 0
+  num_differences <- 1
+  
+  for (iGroup1 in 1:(length(group_means) - 1)) {
+    
+    for (iGroup2 in (iGroup1 + 1):(length(group_means))){
+      
+      total <- total + abs(group_means[iGroup1] - group_means[iGroup2])
+      num_differences <- num_differences + 1
+      
+    }
+  
+  }
+  
+  total/num_differences
+  
+}  # end of the function 
+
+
+
+# apply this function to our data to get our observed statistic 
+
+
+
+  
+
+```
+
+
+
+
+
+
+$\\$
+
+
+
+
+##### Step 3: Create the null distribution
+
+
+```{r sudoku_null_dist}
+
+
+# create the null distribution here using a for loop and the get_MAD_stat() function 
+null_dist <- NULL
+for (i in 1:10000){
+  
+  
+}
+
+
+# plot the null distribution as a histogram
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+##### Step 4: Calculate a p-value
+
+
+```{r sudoku_p_value}
+
+
+
+# plot the null distribution again with a line at the observed statistic
+
+
+
+# calculate the p-value
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+##### Step 5: Make a decision
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+## Part 4: Review z-scores and correlation
+
+
+Let's review correlation and how we could create a permutation test to see if there is a statistically significant correlation between two quantitative variables. 
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+## Part 5: Permutation tests for correlation
+
+
+
+
+
+$\\$
+
+
+
+
+
+##### Step 0: Plot the data
+
+
+```{r cereal_plot}
+
+
+# get the data
+# source('class_functions.R')
+# download_class_data("cereal.Rda")
+
+# load the data
+load("cereal.Rda")
+
+
+# create a scatter plot of carbs as a function of calories
+
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+##### Step 1: State the null and alternative hypotheses 
+
+
+$H_0: $
+$H_A: $ 
+
+
+$\alpha = $
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+##### Step 2: Calculate the observed statistic
+
+
+
+
+```{r cor_obs_stat}
+
+
+
+# calculate the correlation as our observed statistic 
+
+  
+
+```
+
+
+
+
+
+
+$\\$
+
+
+
+
+##### Step 3: Create the null distribution
+
+
+
+
+```{r cor_null_dist}
+
+
+# one null distribution statistic 
+cor(sample(cereal$Calories), cereal$Carbs)
+
+
+# create the full null distribution 
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+##### Step 4: Calculate a p-value
+
+
+```{r cor_p_value}
+
+
+
+# plot the null distribution again with a line at the observed statistic
+
+
+
+# calculate the p-value
+
+
+
+
+
+```
+
+
+$\\$
+
+
+
+
+
+
+
+##### Step 5: Make a decision
+
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+## Homework 5: Was the 1969 Vietnam Draft completely random? 
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+
+
+
+

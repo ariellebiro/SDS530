@@ -1,0 +1,654 @@
+---
+title: "Class 22 notes and code"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+
+
+
+$\\$
+
+
+
+
+
+```{r setup, include=FALSE}
+
+# install.packages("latex2exp")
+
+library(latex2exp)
+
+
+#options(scipen=999)
+
+
+knitr::opts_chunk$set(echo = TRUE)
+
+set.seed(123)
+
+```
+
+
+
+$\\$
+
+
+
+
+## Overview: Multiple linear regression continued
+
+
+
+ * Comparing models with R^2, adjusted R^2, AIC and BIC
+ * Cross-validation
+ * Plotting using grammar of graphics with ggplot
+ * Bonus ggplot features
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+## Part 1: Comparing models with R^2, adjusted R^2, AIC, BIC and cross-validation
+
+
+As we discussed, we can compare models using several measures including $R^2$, $R^2_{adj}$, $AIC$, $BIC$ and cross-validation. Let's try this out on the baseball data.
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 1.1: Comparing models with R^2, adjusted R^2, AIC, BIC
+
+
+Let's compare our predictions of runs in baseball using the model with the original variables and the model that also includes the variables that includes statistics normalized by at bats.
+
+
+
+
+```{r}
+
+
+library(Lahman)
+library(dplyr)
+
+
+
+# reduce the data frame to the main batting statistics of interest
+team_batting2 <- select(Teams, yearID, teamID, G,  W,  L, R,  AB,  H,  X2B, X3B,  HR,  BB,  SO, SB, CS,  HBP, SF) %>%
+  mutate(X1B = H - (X2B + X3B + HR),
+         X1Bn = X1B/AB, 
+         X2Bn = X2B/AB, 
+         X3Bn = X3B/AB, 
+         XHRn = HR/AB, 
+         XBBn = BB/AB)                        
+
+
+
+
+fit1 <- lm(R ~ X1B + X2B + X3B + HR + BB + AB, data = team_batting2)
+fit2 <- lm(R ~ X1B + X2B + X3B + HR + BB + X1Bn + X2Bn + X3Bn + XHRn + XBBn, data = team_batting2)
+
+
+# summarize the fits
+
+
+
+cat('R^2 \n')
+
+
+
+
+cat("\n Adjusted R^2 \n")
+
+
+
+
+cat("\n AIC \n")
+
+
+
+cat("\n BIC \n")
+
+
+
+
+```
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 1.2: Cross-validation
+
+
+Let's now compare the models using cross-validation. To keep things simple, we are just going to split the data once into a training set and a test set rather than do k-fold cross-validation. 
+
+We will compare the models based on their mean squared prediction error (MSPE) where a smaller MSPE is better. 
+
+
+
+```{r}
+
+# create the training set and the test set
+total_num_points <- dim(team_batting2)[1]
+num_training_points <- floor(total_num_points/2)
+
+training_data <- team_batting2[1:num_training_points, ]
+test_data <- team_batting2[(num_training_points + 1):total_num_points, ]
+
+
+
+# fit both models on the training data, and calculate the MSPE based on thier predictions on the test set
+
+fit_cv_1 <- lm(R ~ X1B + X2B + X3B + HR + BB + AB, data = training_data)
+
+# get the test predictions and the MSPE for the smaller model 
+
+
+
+fit_cv_2 <- lm(R ~ X1B + X2B + X3B + HR + BB + X1Bn + X2Bn + X3Bn + XHRn + XBBn, data = training_data)
+
+
+# get the test predictions and the MSPE for the larger model 
+
+
+
+# print the MSPEs 
+
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+## Part 2: Visualization with ggplot
+
+
+We can use the ggplot2 package which is part of the tidyverse to create much nicer looking graphics than using base R graphics. The ggplot2 library is modeled on Leland Wilkinson's "grammar of graphics" which tries to create graphics as a combination of basic visual elements. 
+
+
+In the exercises below, we will use the motor trends cars data set (mtcars) that comes with base R installation, and also the gapminder data. 
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 2.1: Scatter plots
+
+
+```{r}
+
+
+# install.packages("ggplot2")
+
+
+library(ggplot2)
+
+
+# base R
+
+
+# ggplot - mapping in the geom
+
+
+
+# ggplot - global mapping
+
+
+
+
+# ggplot - shorter global mapping
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 2.2: Adding labels to plots
+
+
+We can add labels to the plots using the xlab("label1") and ylab("label2") functions
+
+
+
+```{r}
+
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 2.3: More aesthetic mappings
+
+
+```{r}
+
+
+# add color based on the transmission type (is automatic or not)
+
+
+
+# it is better to treat the transmission type as a categorical variable
+
+
+
+# can also try mappping transmission type to shape or size 
+
+
+
+```
+
+
+
+$\\$
+
+
+
+#### Part 2.4: Attributes vs. Aesthetics
+
+
+Setting an **aesthetic mapping** maps a variable to a **glyph property**
+
+Setting an **attribute** set a glyph property to a **fixed value**
+
+
+
+```{r}
+
+
+# setting an aesthetic
+
+
+
+# setting an attribute
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+#### Part 2.5: Facets
+
+
+Beyond comparing variables based on aesthetics you can compare categorical variables by splitting a plot into subplots (called facets) using facet_wrap()
+
+
+
+
+```{r}
+
+
+# separate subplots for the two transmission types
+
+
+
+
+# One can also do facets in two dimensions
+
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+#### Part 2.6: Overplotting
+
+
+Sometimes points overlap making it hard to estimate the number of points at a particular range of values. 
+
+We can control the transparency of points by changing their alpha values.
+
+
+
+
+```{r}
+
+library(gapminder)
+
+
+# a lot of overplotting
+
+
+
+
+# chaning the transparency levels makes it a bit easir to see how many points are at a given x, y location
+
+
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 2.7a: geoms
+
+
+We can use different geoms to create other types of plots.
+
+
+
+```{r}
+
+# Let's create a plot that shows the GDP in the United States as a function of the year using the geom geom_line()
+
+
+
+
+# Let's plot a histogram of the weights of cars
+
+
+
+
+# Let's create a boxplot of the weights of cars
+
+
+
+
+# Let's create a side-by-side boxplot of the weights of cars depending on the number of cylinders the engine has
+
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 2.7b: geoms continued
+
+Violin and Joy plots are other ways to view distributions of data
+
+
+
+```{r}
+
+# violin plot 
+
+
+# library("ggridges")
+
+
+# joy plot
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 2.8: geoms continued
+
+
+We can also have multiple geom layers on a single graph by using the + symbol
+E.g   ggplot(…) + geom_type1() + geom_type2()
+
+
+
+```{r}
+
+# Create a scatter plot of miles per gallon as a function of weight and then add a smoothed line using geom_smooth()
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 2.9: Themes
+
+
+We can also use different types to change the appearance of our plot
+
+```{r}
+
+
+# Add theme_classic() to our plot
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+## Part 3: Bonus features of ggplot
+
+
+Below are some extra packages that can extend the functionality of ggplot
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 3.1: Additional geoms
+
+There are additional packages that add more geoms
+
+
+
+
+```{r}
+
+
+# # install.packages("emoGG")
+
+# # devtools::install_github("dill/emoGG")
+
+
+# library(emoGG)
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+#### Part 3.2: Adding animation
+
+
+We can create animated images (gifs) using the gganimate package. To learn how to use this package see the [gganimate github website](https://github.com/thomasp85/gganimate)
+
+
+
+```{r}
+
+# # install.packages("gganimate")
+
+# library(gganimate)
+
+
+
+# example from:  https://github.com/thomasp85/gganimate
+
+# run this from the console
+
+# ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, colour = country)) +
+#   geom_point(alpha = 0.7, show.legend = FALSE) +
+#   scale_colour_manual(values = country_colors) +
+#   scale_size(range = c(2, 12)) +
+#   scale_x_log10() +
+#   facet_wrap(~continent) +
+#   # Here comes the gganimate specific bits
+#   labs(title = 'Year: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
+#   transition_time(year) +
+#   ease_aes('linear')
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 3.2: Interactivity
+
+
+We can make our plots interactive using the plotly() library. To learn more about plotly [vist their website](https://plot.ly/)
+
+
+
+
+```{r}
+
+
+# # install.packages("plotly")
+
+# library(plotly)
+
+# also better run from the console or need to knit to html
+
+# p <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, 
+# 	size = pop, col = continent, frame = year)) +  
+# 	geom_point() +  
+# 	scale_x_log10()
+# 
+# ggplotly(p)
+
+
+
+```
+
+
+
+
+
+
+
+

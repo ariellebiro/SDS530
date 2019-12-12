@@ -1,0 +1,484 @@
+---
+title: "Class 19 notes and code"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+
+
+
+$\\$
+
+
+
+
+
+```{r setup, include=FALSE}
+
+# install.packages("latex2exp")
+
+library(latex2exp)
+
+
+#options(scipen=999)
+
+
+knitr::opts_chunk$set(echo = TRUE)
+
+set.seed(123)
+
+```
+
+
+
+$\\$
+
+
+
+
+## Overview
+
+
+ * Multiple linear regression
+ * If there is time: polynomial regression
+ 
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+## Part 1: Multiple linear regression using baseball data
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 1.1: Creating a few commonly used baseball statistics
+
+
+Let's explore which statistic has the highest correlation with the number of runs a team has scored. 
+
+We can start by creating a few commonly used statistics/metrics for quantifying hitting ability by running the code below. 
+
+
+```{r}
+
+
+# install.packages('Lahman')
+
+library(Lahman)
+library(dplyr)
+
+
+# View(Teams)
+
+
+
+# reduce the data frame to the main batting statistics of interest
+team_batting <- select(Teams, yearID, teamID, G,  W,  L, R,  AB,  H,  X2B, X3B,  HR,  BB,  SO, SB, CS,  HBP, SF)
+
+
+# get commonly used composite statistics 
+team_batting <- mutate(team_batting,
+                       X1B = H - (X2B + X3B + HR), 
+                       BA = H/AB, 
+                       OBP = (H + BB)/(AB + BB),
+                       SlugPct = (X1B + 2 * X2B + 3 * X3B + 4 * HR)/AB,
+                       OPS = OBP + SlugPct)
+
+
+# only use teams that have played the 162 games in a season (the number of games currently in a MLB season)
+team_batting <- filter(team_batting, G == 162)
+
+  
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 1.2: Which statistics are most correlated with runs
+
+
+
+Let's look at the coefficient of determination ($R^2$) between runs a team scores (R) and the following statistics:
+
+ * HR:  home runs
+ * BA:  batting average
+ * SlugPct: slugging percentage
+ * OBP:  on base percentage
+
+
+
+```{r}
+
+
+# r^2 for runs with HR
+
+
+
+# r^2 for runs with BA
+
+
+
+# r^2 for runs with SlugPct
+
+
+
+# r^2 for runs with OBP
+
+
+
+# r^2 for runs with OPS
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 1.3: Visualizing the relationships
+
+
+
+Let's visualize the correlation between the main variables of interest: R, HR, OBP, and SlugPct using the pairs() function.
+
+
+
+```{r}
+
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+
+#### Part 1.4: Comparing David Ortiz and Derek Jeter's OPS
+
+
+
+On-base plus Slugging (OPS) seems like the composite statistic that has the highest correlation with runs. Let's compare David Ortiz and Derek Jeter's Slugging percentage to see who is better. 
+
+
+
+
+
+```{r}
+
+# create Ortiz_info info from the Master data frame 
+#(Ortiz_info <- Master %>%
+#  filter(nameFirst == "David", nameLast == "Ortiz"))
+
+
+# create Jeter_info info from the Master data frame 
+
+
+
+# create Ortiz_Jeter_batting that has Ortiz and Jeter's batting stats
+#Ortiz_Jeter_batting <- Batting %>%
+#  filter(playerID %in% c(Ortiz_info$playerID, Jeter_info$playerID))
+
+
+# add SlugPct to the Ortiz_Jeter_batting data frame
+#Ortiz_Jeter_batting <- Ortiz_Jeter_batting %>%
+#  mutate(X1B = H - (X2B + X3B + HR), 
+#         OBP = (H + BB)/(AB + BB),
+#         SlugPct = (X1B + 2 * X2B + 3 * X3B + 4 * HR)/AB,
+#         OPS = OBP + SlugPct)
+
+
+
+# create a boxplot to compare them
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+#### Part 1.6: Running a hypothesis test to compare David and Derek
+
+
+We could also run a hypothesis test to compare David and Derek. Please answer the following questions: 
+
+
+1) Does running a hypothesis test seem like a sensible thing to do? 
+
+2) If so:
+  a) what would the null and alternative hypotheses be? 
+  b) what test should we run? 
+  c) what is the population/process/underlying Truth we are exploring? 
+
+
+
+
+
+
+
+
+```{r}
+
+
+# run a hypothesis test to see if there is a statistically significant difference? 
+
+
+```
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+
+#### Part 1.7: Fitting a regression model to come up with a better metric
+
+
+Let's now use the lm() function to fit a linear regression model that can potentially do a better job at predicting runs.
+
+We can also evaluate which variables seem to be useful for predicting runs.
+
+
+
+
+```{r}
+
+
+# fit the multiple regression model
+
+
+# examine the coefficients
+
+
+
+# look at the model fit statistics
+
+
+```
+
+
+
+**Questions:**  Do the values for the coefficients make sense? 
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+#### Part 1.8: How good is our new statistic? 
+
+```{r}
+
+
+# extract the r^2 value
+
+
+
+```
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 1.9: Can we compare David and Derek on our new statistic? 
+
+
+```{r}
+
+
+# use the predict() function to get the OPT_stat for Ortiz and Jeter
+
+
+
+# create a boxplot to compare them
+
+
+
+# run a t-test to see if there is a statistically significant difference between these players
+
+
+
+```
+
+
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+#### Part 1.10: Can you come up with a regression model that has an even higher correlation with runs? 
+
+
+Add new variables to the data frame that contain additional statistics (e.g., HR^2, etc) and see if you can come up with an even higher correlation value with runs. 
+
+
+Do you think your new model will be better at predicting the number of runs a team scores in the upcoming 2020 baseball season? 
+
+
+
+```{r}
+
+
+
+
+
+
+```
+
+
+**Question:** Did something go wrong here? 
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 1.11: Colinearity
+
+
+Multicolinearity occurs when predictor variables are highly correlated with each other. If there is multicolinearity, there are multiple variables that can make equally good predictions for $y$ and this ends up making the coefficients on these variables not statistically significant. 
+
+The variance inflated factor (VIF) is a statistic to assess multicolinearity. A rule of thumb is that $VIF_i$ > 5 indicates significant multicolinearity. 
+
+
+
+```{r}
+
+library(car)
+
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

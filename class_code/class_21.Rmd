@@ -1,0 +1,408 @@
+---
+title: "Class 21 notes and code"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+
+
+
+$\\$
+
+
+
+
+
+```{r setup, include=FALSE}
+
+# install.packages("latex2exp")
+
+library(latex2exp)
+
+
+#options(scipen=999)
+
+
+knitr::opts_chunk$set(echo = TRUE)
+
+set.seed(123)
+
+```
+
+
+
+$\\$
+
+
+
+
+## Overview: Multiple linear regression continued
+
+
+
+ * More dplyr
+ * Incorporating categorical variables into linear models
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+## Part 1: Data summarization with dplyr
+
+
+So far we have used the following dplyr functions
+
+a) filter() to reduce the number of rows
+
+b) select() to get a subset of variables 
+
+c) mutate() to add on new variables to a data frame
+
+d) arrange() to rearrange the order of rows in a data frame
+
+e) sample_n() to randomly sample rows in a data frame
+
+
+
+One of the most powerful features of dplyr is the ability to summarize data in different groups. To do this we use:
+
+a) group_by() which specifies which groups to compute statistics over
+b) summarize() function which creates separate statistics for each group 
+
+
+Let's try this on the Edmunds car data
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 1.1: Summary statistics by group
+
+
+Let's get the mean price for used cars separately for each brand
+
+
+
+
+```{r}
+
+
+library(dplyr)
+
+
+#download.file('https://yale.box.com/shared/static/gzu5lhulepp3zsyxptwxoeafpst1ccdv.rda', 'car_transactions.rda')
+
+load('car_transactions.rda')
+
+
+
+# get used cars, and for each brand (make), get the mean price 
+
+
+
+
+
+
+```
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 1.2: Summary statistics using more than one group
+
+
+
+We can also group by more than one variable and get summaries for each brand for both new and used cars. 
+
+
+```{r}
+
+
+# for each brand and for both new and used cars, get summary prices 
+
+
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+#### Part 1.3: Grouping with the mutate() function
+
+
+We can also use the group_by() function with the mutate() function rather than using it with the summarize() function. This will add the statistics values from each group on as an additional row in the data frame. 
+
+
+```{r}
+
+
+# get used BMWs and add on the average price paid for each brand (make)
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+## Part 2: Fitting linear regression models with categorical predictors
+
+
+When I sold my new car, I was interested in also buying a new car. Toward the end of my search, the car models I was consider were the Mazda 3 and the Subaru Impreza. When buying the new car, I also considered that at some point I was going to have to sell the car, so I was interested in looking at how car prices decline as they are driven more miles. 
+
+
+
+
+#### Part 2.1: Getting the relevant data
+
+
+Let's examine this for the Mazda 3, the Subaru Impreza along with the BMW 5 series (one can dream, right?). Let's start by filtering the data to get only these makes.
+
+
+
+```{r}
+
+
+# filter the data to only have 3 brands
+
+
+
+
+# we can visualize the data too...
+
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+#### Part 2.2: Fitting a model with different intercepts for each car type
+
+
+Let's now fit a model for predicting price as a function of miles driven with a separate intercept for each model.
+
+
+```{r}
+
+
+
+# fit the model with separately intercepts
+
+
+
+# summarize it
+
+
+
+# get the coefficients
+
+
+
+```
+
+
+
+
+
+**Question:** How much less is a Mazda 3 compared to a BMW 5 series?
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+#### Part 2.3: Visualizing the fits
+
+
+We can visualize these models too. All three models have the same slope but different y-intercepts. 
+
+
+
+
+```{r}
+
+
+
+# plot the data again
+
+
+
+
+
+
+# add the regression lines
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+#### Part 2.4: Fitting a model with different intercepts and slopes for each car type
+
+
+```{r}
+
+
+# fit the model with different intercepts and slopes
+
+
+
+
+# summarize it
+
+
+
+
+# get the coefficients
+
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+#### Part 2.5: Visualizing the model with different intercepts and slopes 
+
+
+
+```{r}
+
+
+# plot the points again
+
+
+
+
+# add lines for the different models
+
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

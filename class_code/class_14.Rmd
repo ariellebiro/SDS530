@@ -1,0 +1,296 @@
+---
+title: "Class 14 notes and code"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+
+
+
+$\\$
+
+
+
+
+
+```{r setup, include=FALSE}
+
+# install.packages("latex2exp")
+
+library(latex2exp)
+
+
+options(scipen=999)
+
+
+knitr::opts_chunk$set(echo = TRUE)
+
+set.seed(123)
+
+```
+
+
+
+$\\$
+
+
+
+
+## Overview
+
+ * Kruskal–Wallis test and pairwise comparisons
+ * Simple linear regression
+
+
+
+$\\$
+
+
+
+
+
+**Part 1.0 - step 0** Create a side-by-side boxplot comparing the critics' scores of the movie for each MPAA rating level. 
+
+```{r visualize_movies}
+
+
+#download.file('http://www2.stat.duke.edu/~mc301/data/movies.Rdata', 'movies.Rdata')
+
+load('movies.Rdata')
+
+# only keep movies rated "G", "PG", "PG-13", "R"
+movies3 <- movies[movies$mpaa_rating %in% c("G", "PG", "PG-13", "R"), ]
+movies3$mpaa_rating <- droplevels(movies3$mpaa_rating)
+
+
+
+boxplot(critics_score ~ mpaa_rating, data = movies3, 
+        xlab = "MPAA rating", 
+        ylab = "Critics' score",
+        main = "Critics' scores for each MPAA rating level")
+```
+
+
+
+
+$\\$
+
+
+**Part 1.1** Kruskal–Wallis test to see if any of our groups stochastically dominate another group. 
+
+```{r}
+
+
+# Kruskal–Wallis test using the kruskal.test() function
+
+
+# compare to the ANOVA 
+
+
+
+
+```
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+**Part 1.2** Pairwise comparisons in R
+
+
+```{r}
+
+
+# test with no multiple comparisons adjustment (not good)
+
+
+# with the Bonferroni
+
+
+# Note, the Bonferroni p-values are 6 times larger than the p-values with no adjustment
+
+
+# Tukey's HSD test using the TukeyHSD(anova_fit) function - very similar to the Bonferroni correction here
+
+
+
+```
+
+
+
+
+
+      G      PG     PG-13 
+PG    1.0000 -      -     
+PG-13 0.0375 0.0407 -     
+R     1.0000 1.0000 0.0019
+
+P value adjustment method: bonferroni 
+
+
+
+
+
+
+
+
+
+
+$\\$
+
+
+
+
+
+## Part 2: Simple linear regression in R
+
+
+
+Smoking is associated with cancer? Let's do a regression analysis to build a linear model that can predict the cancer rate based on the rate that people smoke using the smoking rate from 50 states. 
+
+
+
+Let's start by plotting the data, fitting our linear model, and visualizing the fit
+
+
+```{r}
+
+# source('class_functions.R')
+# download_class_data("smoking_cancer.rda")
+
+
+#load("smoking_cancer.rda")
+
+
+# create a scatter plot and calculate the correlation (note: this is plot(x, y))
+
+ 
+
+# fit a regression model  (note: this is y as as function of x)
+
+
+
+# add the regression line to the plot
+
+
+
+# do any points appear to be outliers? 
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+Now let's examine:
+
+1) The coeffients found by our model
+2) The predicted values y-hat values for each x value in our data set
+3) The residuals
+
+
+
+```{r}
+
+
+# examine the a and b coefficients
+
+
+
+# could you write out this linear regression equation? 
+
+
+
+# let's look at all the fitted values y-hat for each x in our data set
+
+
+
+# let's look at the residuals (y - y-hat)
+
+
+# do these residual match what we would expect based on y - fitted.values? 
+
+
+
+
+```
+
+
+
+
+
+$\\$
+
+
+
+
+
+We can also make predictions $\hat{y}$ for new x-values
+
+
+
+
+
+```{r}
+
+# create a new data frame with values we want to predict
+
+
+
+# predicted y-hat values
+
+
+
+
+# replot data with these new points on it
+
+
+
+# add the regression line to the plot
+
+
+
+
+
+
+
+```
+
+
+
+$\\$
+
+
+
+
+
+## After the break...
+
+* Inference for linear regression
+* Multiple regression 
+* Data Science!
+
+
+
+
+
+
+
+
+
